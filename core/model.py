@@ -6,14 +6,14 @@ from .geocom.features import featureTracking
 
 from .utils import *
 import pdb
-from loop_closure import LoopClosure
+from .loop_closure import LoopClosure
 
 KMIN_NUM_FEATURE = 1500
 optimize = False
 
 class VisualSLAM():
    
-    def __init__(self, camera_intrinsics, ground_pose, args):
+    def __init__(self, camera_intrinsics, ground_pose, dataset, args):
         
         self.K = camera_intrinsics
         self.ground_pose = ground_pose
@@ -29,7 +29,7 @@ class VisualSLAM():
         self.errors = []
 
         self.pose_graph = PoseGraph(verbose = True)
-        self.loop_closure = LoopClosure()
+        self.loop_closure = LoopClosure(args.gt_loops, dataset, self.K)
         
     def getAbsoluteScale(self, frame_id):
         """
@@ -70,6 +70,12 @@ class VisualSLAM():
         self.pose_graph.add_vertex(i, pose)
         self.pose_graph.add_edge((j, i), getTransform(pose, prev_pose))
         return
+
+    def add_loop_constraint(self, pose, i, j):
+        self.pose_graph.add_vertex(i, pose)
+        self.pose_graph.add_edge((j, i), pose)
+        return
+
 
     def calculate_errors(self):
 
@@ -127,6 +133,13 @@ class VisualSLAM():
             pose = convert_to_4_by_4(self.cur_Rt)
             prev_pose = convert_to_4_by_4(self.prev_Rt)
             self.graph_extend(pose, prev_pose, stage, stage-1)
+
+            found_loop, rel_pose, idx_j = self.loop_closure.check_loop_closure(stage, current_frame)
+
+            if found_loop:
+                print("Found Loop Closure")
+                self.add_loop_constraint(rel_pose, stage, idx_j)
+                self.pose_graph.optimize(self.args.num_iter)
 
             
 

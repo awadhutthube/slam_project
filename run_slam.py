@@ -1,7 +1,10 @@
 import numpy as np 
 import cv2
 import argparse
-
+import sys
+sys.path.append("../pyslam/thirdparty/g2opy/lib/")
+sys.path.append("../pyslam/thirdparty/pangolin/")
+    
 from core.model import VisualSLAM
 from core.dataset import KittiDataset
 from core.utils import draw_trajectory
@@ -13,6 +16,7 @@ def parse_argument():
     parser=argparse.ArgumentParser()
     parser.add_argument('--dataset', default='kitti')
     parser.add_argument('--path', required=True)
+    parser.add_argument('--gt_loops', required=True)
     parser.add_argument('--optimize', action='store_true', help='enable pose graph optimization')
     parser.add_argument('--local_window', default=10, type=int, help='number of frames to run the optimization')
     parser.add_argument('--num_iter', default=100, type=int, help='number of max iterations to run the optimization')
@@ -32,7 +36,7 @@ def main():
     # ipdb.set_trace()
 
     # Initialise the mono-VO model
-    model = VisualSLAM(camera_matrix, ground_truth_poses, args)
+    model = VisualSLAM(camera_matrix, ground_truth_poses, dataset, args)
     
     # Initialie the viewer object
     viewer = Viewer3D()
@@ -58,8 +62,8 @@ def main():
         true_x, true_y = int(model.trueX) + 290, int(model.trueZ) + 290
         
         #draw_trajectory(blank_slate, index, x, y, z, draw_x, draw_y, true_x, true_y)
-        cv2.imshow('Road facing camera', frame)
-        cv2.waitKey(1)
+        # cv2.imshow('Road facing camera', frame)
+        # cv2.waitKey(1)
 
 
     viewer.update(model)
