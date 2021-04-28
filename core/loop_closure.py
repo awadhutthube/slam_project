@@ -22,10 +22,12 @@ class LoopClosure():
         # TODO: Check similarity with all valid neighbours and choose 1 or 2 to create edges
         max_num_matches = 0
         for img_idx in valid_neighbours:
-            frame_old, _, _ = dataset[img_idx]
+            frame_old, _, _ = self.dataset[img_idx]
             # Check similarity using keypoint matches
-            kp1, kp2, matches = find_matches(frame_new, frame_old)
+
+            kp1, kp2, matches = self.find_matches(frame_new, frame_old)
             # Can also set min number of required matches
+
             if len(matches) > max_num_matches:
                 max_num_matches = len(matches)
                 target_frame = frame_old.copy()
@@ -36,8 +38,10 @@ class LoopClosure():
 
         # Compute R and t for maximally matching neighbours
         if max_num_matches > 0:
-            matched_kp1 = kp1[matches.queryIdx]
-            matched_kp2 = kp2[matches.trainIdx]
+            import ipdb; ipdb.set_trace()
+            matched_kp1 = [kp1[mat.queryIdx].pt for mat in matches]
+            matched_kp2 = [kp2[mat.trainIdx].pt for mat in matches]
+
             E, _ = cv2.findEssentialMat(matched_kp1, matched_kp2, self.K, method=cv2.RANSAC, prob=0.999, threshold=1.0)
             _, R, t, mask = cv2.recoverPose(E, matched_kp1, matched_kp2, self.K)
             pose = convert_to_4_by_4(convert_to_Rt(R,t))
@@ -49,7 +53,7 @@ class LoopClosure():
 
         return loop_closure_flag, pose, matched_idx
 
-    def find_matches(img1, img2, return_ratio = 1):
+    def find_matches(self, img1, img2, return_ratio = 1):
         sift = cv2.SIFT_create()
 
         kp1, descriptors_1 = sift.detectAndCompute(img1,None)
