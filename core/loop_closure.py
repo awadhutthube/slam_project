@@ -15,6 +15,7 @@ class LoopClosure():
     def check_loop_closure(self, idx, frame_new):
         loop_closure_flag = False
         pose, matched_idx = None, None
+        best_kp1, best_kp2, best_matches = None, None, None
         local_neighbours = self.neighbours[idx][0][0]         # numpy array of neighbours
         # import ipdb; ipdb.set_trace()
         valid_neighbours = local_neighbours[local_neighbours < idx]
@@ -39,8 +40,13 @@ class LoopClosure():
         # Compute R and t for maximally matching neighbours
         if max_num_matches > 0:
             import ipdb; ipdb.set_trace()
-            matched_kp1 = [kp1[mat.queryIdx].pt for mat in matches]
-            matched_kp2 = [kp2[mat.trainIdx].pt for mat in matches]
+            matched_kp1 = []
+            matched_kp2 = []
+            for mat in best_matches:
+                matched_kp1.append(best_kp1[mat[0].queryIdx].pt)
+                matched_kp2.append(best_kp2[mat[0].trainIdx].pt)
+            # matched_kp1 = [best_kp1[mat.queryIdx].pt for mat in best_matches]
+            # matched_kp2 = [best_kp2[mat.trainIdx].pt for mat in best_matches]
 
             E, _ = cv2.findEssentialMat(matched_kp1, matched_kp2, self.K, method=cv2.RANSAC, prob=0.999, threshold=1.0)
             _, R, t, mask = cv2.recoverPose(E, matched_kp1, matched_kp2, self.K)
