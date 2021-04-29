@@ -150,8 +150,8 @@ class VisualSLAM():
             #     self.run_optimizer(self.args.local_window)
                 #self.calculate_errors()
 
-        self.prev_t = self.poses[-1][:3,3]
-        self.prev_R = self.poses[-1][:3,:3]
+        self.prev_t = self.poses[-1][:3, 3].reshape(-1,1)
+        self.prev_R = self.poses[-1][:3, :3]
         self.prev_Rt = convert_to_Rt(self.prev_R, self.prev_t)        
         self.prev_frame = current_frame
         
