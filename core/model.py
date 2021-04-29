@@ -92,7 +92,7 @@ class VisualSLAM():
         self.gt.append(convert_to_4_by_4(self.ground_pose[stage-1]))
         self.current_frame = current_frame
 
-        if stage == 0:
+        if stage == 1450:
             """ process first frame """
 
             self.points_ref = self.detector.detect(current_frame)
@@ -102,7 +102,7 @@ class VisualSLAM():
             self.poses.append(self.prev_Rt)
             return
     
-        elif stage == 1:
+        elif stage == 1451:
             """ process second frame """
             
             self.points_ref, points_cur = self.feature_tracker(self.prev_frame, current_frame, self.points_ref)

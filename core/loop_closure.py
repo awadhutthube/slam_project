@@ -32,14 +32,14 @@ class LoopClosure():
             if len(matches) > max_num_matches:
                 max_num_matches = len(matches)
                 target_frame = frame_old.copy()
-                best_kp1 = kp1.copy()
-                best_kp2 = kp2.copy()
-                best_matches = matches.copy()
+                best_kp1 = kp1
+                best_kp2 = kp2
+                best_matches = matches
                 matched_idx = img_idx
 
         # Compute R and t for maximally matching neighbours
         if max_num_matches > 0:
-            import ipdb; ipdb.set_trace()
+            # import ipdb; ipdb.set_trace()
             matched_kp1 = []
             matched_kp2 = []
             for mat in best_matches:
@@ -47,16 +47,16 @@ class LoopClosure():
                 matched_kp2.append(best_kp2[mat[0].trainIdx].pt)
             # matched_kp1 = [best_kp1[mat.queryIdx].pt for mat in best_matches]
             # matched_kp2 = [best_kp2[mat.trainIdx].pt for mat in best_matches]
-
+            matched_kp1 = np.array(matched_kp1)
+            matched_kp2 = np.array(matched_kp2)
             E, _ = cv2.findEssentialMat(matched_kp1, matched_kp2, self.K, method=cv2.RANSAC, prob=0.999, threshold=1.0)
             _, R, t, mask = cv2.recoverPose(E, matched_kp1, matched_kp2, self.K)
             pose = convert_to_4_by_4(convert_to_Rt(R,t))
             loop_closure_flag = True
-            cv2.imshow('Current', frame_new)
-            cv2.waitKey(0)
-            cv2.imshow('Target', target_frame)
-            cv2.waitKey(0)
-
+            # cv2.imshow('Current', frame_new)
+            # cv2.waitKey(0)
+            # cv2.imshow('Target', target_frame)
+            # cv2.waitKey(0)
         return loop_closure_flag, pose, matched_idx
 
     def find_matches(self, img1, img2, return_ratio = 1):
