@@ -20,7 +20,7 @@ class LoopClosure():
         # import ipdb; ipdb.set_trace()
         valid_neighbours = local_neighbours[local_neighbours < idx]
 
-        # TODO: Check similarity with all valid neighbours and choose 1 or 2 to create edges
+        # Check similarity with all valid neighbours and choose 1 or 2 to create edges
         max_num_matches = 0
         for img_idx in valid_neighbours:
             frame_old, _, _ = self.dataset[img_idx]
@@ -74,3 +74,5 @@ class LoopClosure():
         #         good.append(m)
         # matches = sorted(good, key = lambda x:x.distance)
         return kp1, kp2, matches
+
+    

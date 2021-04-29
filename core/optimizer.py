@@ -36,7 +36,7 @@ class PoseGraph(object):
     edge = g2o.EdgeSE3()
     for i, vertex in enumerate(vertices):
     # check to see if we're passing in actual vertices or just the vertex ids
-
+    
       if isinstance(vertex, int): 
         vertex = self.optimizer.vertex(vertex)
 
