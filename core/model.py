@@ -72,7 +72,9 @@ class VisualSLAM():
         return
 
     def add_loop_constraint(self, pose, i, j):
-        self.pose_graph.add_edge((i, j), pose)
+
+        pose = np.linalg.inv(pose)
+        self.pose_graph.add_edge((j, i), pose)
         return
 
 
@@ -91,7 +93,7 @@ class VisualSLAM():
         self.gt.append(convert_to_4_by_4(self.ground_pose[stage-1]))
         self.current_frame = current_frame
 
-        if stage == 0:
+        if stage == 1450:
             """ process first frame """
 
             self.points_ref = self.detector.detect(current_frame)
@@ -101,7 +103,7 @@ class VisualSLAM():
             self.poses.append(self.prev_Rt)
             return
     
-        elif stage == 1:
+        elif stage == 1451:
             """ process second frame """
             
             self.points_ref, points_cur = self.feature_tracker(self.prev_frame, current_frame, self.points_ref)
@@ -129,6 +131,8 @@ class VisualSLAM():
             self.cur_Rt = convert_to_Rt(self.cur_R, self.cur_t)
             self.poses.append(convert_to_4_by_4(self.cur_Rt))
 
+            import ipdb; ipdb.set_trace()
+
             pose = convert_to_4_by_4(self.cur_Rt)
             prev_pose = convert_to_4_by_4(self.prev_Rt)
             self.graph_extend(pose, prev_pose, stage, stage-1)
@@ -139,6 +143,7 @@ class VisualSLAM():
                 print("Found Loop Closure")
                 self.add_loop_constraint(rel_pose, stage, int(idx_j))
                 self.pose_graph.optimize(self.args.num_iter)
+                self.poses = self.pose_graph.nodes_optimized
 
             
 

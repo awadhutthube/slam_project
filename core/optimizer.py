@@ -34,7 +34,7 @@ class PoseGraph(object):
   def add_edge(self, vertices, measurement=None, information=np.eye(6), robust_kernel=None):
     
     edge = g2o.EdgeSE3()
-    for i, vertex in enumerate(vertices):
+    for i, vertex in enumerate(vertices): # vertices - (j, i)
     # check to see if we're passing in actual vertices or just the vertex ids
 
       if isinstance(vertex, int): 

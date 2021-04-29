@@ -68,9 +68,9 @@ class LoopClosure():
         # Nearest matches for lowe's ratio test
         bf = cv2.BFMatcher()
         matches = bf.knnMatch(descriptors_1,descriptors_2,k=1)
-        # good = []
-        # for m,n in matches:
-        #     if m.distance < 0.75*n.distance:
-        #         good.append(m)
-        # matches = sorted(good, key = lambda x:x.distance)
+        good = []
+        for m,n in matches:
+            if m.distance < 0.75*n.distance:
+                good.append(m)
+        matches = sorted(good, key = lambda x:x.distance)
         return kp1, kp2, matches
