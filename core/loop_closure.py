@@ -1,3 +1,4 @@
+import ipdb
 import numpy as np
 import scipy.io
 import cv2
@@ -36,28 +37,41 @@ class LoopClosure():
                 best_kp2 = kp2
                 best_matches = matches
                 matched_idx = img_idx
+                if(max_num_matches > 150):
+                    print("Length of best matches: ", max_num_matches)
+                    break
 
         # Compute R and t for maximally matching neighbours
-        if max_num_matches > 0:
+        if max_num_matches >= 150:
             # import ipdb; ipdb.set_trace()
             matched_kp1 = []
             matched_kp2 = []
+            # self.DrawMatches(frame_new, target_frame, best_kp1, best_kp2, best_matches)
+            # import ipdb; ipdb.set_trace()
             for mat in best_matches:
-                matched_kp1.append(best_kp1[mat[0].queryIdx].pt)
-                matched_kp2.append(best_kp2[mat[0].trainIdx].pt)
-            # matched_kp1 = [best_kp1[mat.queryIdx].pt for mat in best_matches]
-            # matched_kp2 = [best_kp2[mat.trainIdx].pt for mat in best_matches]
+                matched_kp1.append(best_kp1[mat.queryIdx].pt)
+                matched_kp2.append(best_kp2[mat.trainIdx].pt)
+
             matched_kp1 = np.array(matched_kp1)
             matched_kp2 = np.array(matched_kp2)
             E, _ = cv2.findEssentialMat(matched_kp1, matched_kp2, self.K, method=cv2.RANSAC, prob=0.999, threshold=1.0)
             _, R, t, mask = cv2.recoverPose(E, matched_kp1, matched_kp2, self.K)
             pose = convert_to_4_by_4(convert_to_Rt(R,t))
             loop_closure_flag = True
+
             # cv2.imshow('Current', frame_new)
             # cv2.waitKey(0)
             # cv2.imshow('Target', target_frame)
             # cv2.waitKey(0)
         return loop_closure_flag, pose, matched_idx
+
+    def DrawMatches(self, img1, img2, kp1, kp2, matches):
+        # matches = sorted(matches, key = lambda x:x.distance)
+        img3 = cv2.drawMatches(img1,kp1,img2,kp2,matches[:],None, flags=2)
+        cv2.namedWindow('Matches', cv2.WINDOW_NORMAL)
+        cv2.imshow('Matches', img3)
+        cv2.waitKey(0)
+        return 
 
     def find_matches(self, img1, img2, return_ratio = 1):
         sift = cv2.SIFT_create()
@@ -67,7 +81,7 @@ class LoopClosure():
 
         # Nearest matches for lowe's ratio test
         bf = cv2.BFMatcher()
-        matches = bf.knnMatch(descriptors_1,descriptors_2,k=1)
+        matches = bf.knnMatch(descriptors_1,descriptors_2,k=2)
         good = []
         for m,n in matches:
             if m.distance < 0.75*n.distance:

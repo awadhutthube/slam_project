@@ -43,15 +43,15 @@ def main():
     error = []
     
     # Iterate over the frames and update the rotation and translation vectors
-    for index in range(1450, num_frames):
+    for index in range(0, num_frames):
 
         frame, _ , _ = dataset[index]
         model(index, frame)
 
-        if index>1452:
+        if index>2:
             viewer.update(model)
 
-        if index>1452:
+        if index>2:
             x, y, z = model.cur_t[0], model.cur_t[1], model.cur_t[2]
         else:
             x, y, z = 0.,  0., 0.

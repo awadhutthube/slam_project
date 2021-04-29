@@ -27,7 +27,7 @@ class VisualSLAM():
         self.poses = []
         self.gt = []
         self.errors = []
-
+        self.loop_closure_count = 0
         self.pose_graph = PoseGraph(verbose = True)
         self.loop_closure = LoopClosure(args.gt_loops, dataset, self.K)
         
@@ -75,6 +75,7 @@ class VisualSLAM():
 
         pose = np.linalg.inv(pose)
         self.pose_graph.add_edge((j, i), pose)
+        self.loop_closure_count+=1
         return
 
 
@@ -93,7 +94,7 @@ class VisualSLAM():
         self.gt.append(convert_to_4_by_4(self.ground_pose[stage-1]))
         self.current_frame = current_frame
 
-        if stage == 1450:
+        if stage == 0:
             """ process first frame """
 
             self.points_ref = self.detector.detect(current_frame)
@@ -103,7 +104,7 @@ class VisualSLAM():
             self.poses.append(self.prev_Rt)
             return
     
-        elif stage == 1451:
+        elif stage == 1:
             """ process second frame """
             
             self.points_ref, points_cur = self.feature_tracker(self.prev_frame, current_frame, self.points_ref)
@@ -131,8 +132,6 @@ class VisualSLAM():
             self.cur_Rt = convert_to_Rt(self.cur_R, self.cur_t)
             self.poses.append(convert_to_4_by_4(self.cur_Rt))
 
-            import ipdb; ipdb.set_trace()
-
             pose = convert_to_4_by_4(self.cur_Rt)
             prev_pose = convert_to_4_by_4(self.prev_Rt)
             self.graph_extend(pose, prev_pose, stage, stage-1)
@@ -140,20 +139,19 @@ class VisualSLAM():
             found_loop, rel_pose, idx_j = self.loop_closure.check_loop_closure(stage, current_frame)
 
             if found_loop:
-                print("Found Loop Closure")
+                print("Found Loop Closure: ", self.loop_closure_count)
                 self.add_loop_constraint(rel_pose, stage, int(idx_j))
-                self.pose_graph.optimize(self.args.num_iter)
-                self.poses = self.pose_graph.nodes_optimized
-
-            
-
+                
+                if(self.loop_closure_count%25 == 0):
+                    self.pose_graph.optimize(self.args.num_iter)
+                    self.poses = self.pose_graph.nodes_optimized
 
             # if self.args.optimize:
             #     self.run_optimizer(self.args.local_window)
                 #self.calculate_errors()
 
-        self.prev_t = self.cur_t
-        self.prev_R = self.cur_R
+        self.prev_t = self.poses[-1][:3,3]
+        self.prev_R = self.poses[-1][:3,:3]
         self.prev_Rt = convert_to_Rt(self.prev_R, self.prev_t)        
         self.prev_frame = current_frame
         
