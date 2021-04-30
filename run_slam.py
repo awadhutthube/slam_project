@@ -43,7 +43,7 @@ def main():
     error = []
     
     # Iterate over the frames and update the rotation and translation vectors
-    for index in range(num_frames):
+    for index in range(0, num_frames):
 
         frame, _ , _ = dataset[index]
         model(index, frame)
@@ -57,9 +57,9 @@ def main():
             x, y, z = 0.,  0., 0.
             
         ## Set ofset to remove the overlap
-        offset_x, offset_y = 5, 5
-        draw_x, draw_y =int(x) + 290 - offset_x, int(z) + 290 - offset_y
-        true_x, true_y = int(model.trueX) + 290, int(model.trueZ) + 290
+        # offset_x, offset_y = 5, 5
+        # draw_x, draw_y =int(x) + 290 - offset_x, int(z) + 290 - offset_y
+        # true_x, true_y = int(model.trueX) + 290, int(model.trueZ) + 290
         
         #draw_trajectory(blank_slate, index, x, y, z, draw_x, draw_y, true_x, true_y)
         # cv2.imshow('Road facing camera', frame)

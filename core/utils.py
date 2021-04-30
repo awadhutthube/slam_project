@@ -49,9 +49,9 @@ def getTransform(cur_pose, prev_pose):
     """
 
     Rt = np.eye(4)
-    Rt[:3,:3] = cur_pose[:3,:3].T @ prev_pose[:3, :3]
-    Rt[:3, -1] = cur_pose[:3, :3].T @ (cur_pose[:3,-1] - prev_pose[:3, -1])
-
+    # Rt[:3,:3] = cur_pose[:3,:3].T @ prev_pose[:3, :3]
+    # Rt[:3, -1] = cur_pose[:3, :3].T @ (cur_pose[:3,-1] - prev_pose[:3, -1])
+    Rt = np.linalg.inv(prev_pose)@cur_pose
     return Rt
 
 def getError(cur_pose, prev_pose, cur_gt, prev_gt):
