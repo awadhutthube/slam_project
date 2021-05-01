@@ -219,8 +219,8 @@ class VisualSLAM():
                 rel_pose[:3,3] = rel_pose[:3,3]*abs_dist
                 self.add_loop_constraint(rel_pose, stage, int(idx_j))
                 
-                if(self.loop_closure_count%50 == 0):
-                    import ipdb; ipdb.set_trace()
+                if(self.loop_closure_count%25 == 0):
+                    # import ipdb; ipdb.set_trace()
                     self.pose_graph.optimize(self.args.num_iter)
                     self.poses = self.pose_graph.nodes_optimized
                     global_flag = True
@@ -233,8 +233,8 @@ class VisualSLAM():
                 #self.calculate_errors()
         self.prev_t = self.poses[-1][:3, 3].reshape(-1,1)
         self.prev_R = self.poses[-1][:3, :3]
-        self.prev_t = self.cur_t 
-        self.prev_R = self.cur_R
+        # self.prev_t = self.cur_t 
+        # self.prev_R = self.cur_R
         self.prev_Rt = convert_to_Rt(self.prev_R, self.prev_t)        
         if global_flag:
             # import ipdb; ipdb.set_trace()

@@ -7,7 +7,7 @@ from .utils import *
 
 class LoopClosure():
     def __init__(self, path, dataset, intrinsic_mat):
-        gt_loop_data = scipy.io.loadmat(path + 'gnd_kitti00.mat')
+        gt_loop_data = scipy.io.loadmat(path + 'gnd_kitti05.mat')
         self.neighbours = gt_loop_data['gnd']            # This is a numpy array of shape (num_images, 1)
         self.dataset = dataset
         self.K = intrinsic_mat
