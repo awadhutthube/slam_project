@@ -123,8 +123,10 @@ class VisualSLAM():
             self.points_ref = self.detector.detect(current_frame)
             self.points_ref = np.array([x.pt for x in self.points_ref])
             self.prev_frame = current_frame
-            # import ipdb; ipdb.set_trace()
             self.prev_Rt = convert_to_4_by_4(self.ground_pose[stage])#np.eye(4) 
+            self.prev_R = self.prev_Rt[:3,:3]
+            self.prev_t = self.prev_Rt[:3, 3].reshape(-1,1)
+            self.poses.append(np.eye(4))
             self.poses.append(self.prev_Rt)
 
             # wtf check how to set reference pose for the pose graph (set to origin)
@@ -135,11 +137,17 @@ class VisualSLAM():
             """ process second frame """
             self.points_ref, points_cur = self.feature_tracker(self.prev_frame, current_frame, self.points_ref)
             E, _ = cv2.findEssentialMat(points_cur, self.points_ref, self.K, method=cv2.RANSAC, prob=0.999, threshold=1.0)
-            _, self.cur_R, self.cur_t, __ = cv2.recoverPose(E, points_cur, self.points_ref, self.K)
+            _, R, t, __ = cv2.recoverPose(E, points_cur, self.points_ref, self.K)
             # if (abs(self.cur_t[1]) > 0.001):
             #     print('true')
             # self.cur_t[1] = 0
             self.points_ref = points_cur
+            absolute_scale = self.getAbsoluteScale(stage)
+            # print(absolute_scale)
+            if absolute_scale > 0.1:
+                self.cur_t = self.prev_t + absolute_scale*self.prev_R@t
+                self.cur_R = self.prev_R@R
+            # import ipdb; ipdb.set_trace()
             self.cur_Rt = convert_to_Rt(self.cur_R, self.cur_t)
             self.poses.append(convert_to_4_by_4(self.cur_Rt))
             self.graph_extend(convert_to_4_by_4(self.cur_Rt), self.prev_Rt, stage, stage-1)
