@@ -26,6 +26,11 @@ class VisualSLAM():
         self.trueX, self.trueY, self.trueZ = 0, 0, 0
         self.poses = []
         self.gt = []
+        # np_gt = np.load('Gt.npy')
+        # np_poses = np.load('Poses.npy')
+        # self.gt = [np_gt[i] for i in range(np_gt.shape[0])]
+        # self.poses = [np_poses[i] for i in range(np_poses.shape[0])]
+        # import ipdb; ipdb.set_trace()
         self.errors = []
         self.loop_closure_count = 0
         self.pose_graph = PoseGraph(verbose = True)
@@ -227,14 +232,22 @@ class VisualSLAM():
             self.graph_extend(pose, prev_pose, stage, stage-1)
 
             found_loop, rel_pose, idx_j = self.loop_closure.check_loop_closure(stage, current_frame)
-
             if found_loop:
+                curr_stage_gt = self.ground_pose[stage]
+                matched_gt = self.ground_pose[idx_j]
+                # np.save('Poses', np.array(self.poses))
+                # np.save('Gt', np.array(self.gt))
+                # import ipdb; ipdb.set_trace()
                 print("Found Loop Closure: ", self.loop_closure_count)
                 abs_dist = self.getAbsoluteScaleLoop(stage, idx_j)
                 rel_pose[:3,3] = rel_pose[:3,3]*abs_dist
+                rel_pose = getTransform(curr_stage_gt, matched_gt)
                 self.add_loop_constraint(rel_pose, stage, int(idx_j))
-                
-                if(self.loop_closure_count%50 == 0):
+
+
+
+
+                if(self.loop_closure_count%5 == 0):
                     # import ipdb; ipdb.set_trace()
                     self.pose_graph.optimize(self.args.num_iter)
                     self.poses = self.pose_graph.nodes_optimized

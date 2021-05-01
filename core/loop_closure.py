@@ -65,6 +65,7 @@ class LoopClosure():
             pose = convert_to_4_by_4(convert_to_Rt(R,t))
             print("New index: ", idx)
             print("Matched Index: ", matched_idx)
+            print("Total Matches: ", len(best_matches))
             loop_closure_flag = True
             # cv2.imshow('Current', frame_new)
             # cv2.waitKey(0)
