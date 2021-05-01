@@ -7,12 +7,18 @@ from .utils import *
 
 class LoopClosure():
     def __init__(self, path, dataset, intrinsic_mat):
-        gt_loop_data = scipy.io.loadmat(path + 'gnd_kitti00.mat')
+        gt_loop_data = scipy.io.loadmat(path + 'gnd_kitti05.mat')
         self.neighbours = gt_loop_data['gnd']            # This is a numpy array of shape (num_images, 1)
         self.dataset = dataset
         self.K = intrinsic_mat
         return
     
+    # def get_first_loop_closure(self):
+        
+    #     local_neighbours = self.neighbours[0][0][0]
+    #     for ele in local_neighbours:
+
+
     def check_loop_closure(self, idx, frame_new):
         loop_closure_flag = False
         pose, matched_idx = None, None
@@ -57,6 +63,8 @@ class LoopClosure():
             E, _ = cv2.findEssentialMat(matched_kp1, matched_kp2, self.K, method=cv2.RANSAC, prob=0.999, threshold=1.0)
             _, R, t, mask = cv2.recoverPose(E, matched_kp1, matched_kp2, self.K)
             pose = convert_to_4_by_4(convert_to_Rt(R,t))
+            print("New index: ", idx)
+            print("Matched Index: ", matched_idx)
             loop_closure_flag = True
             # cv2.imshow('Current', frame_new)
             # cv2.waitKey(0)

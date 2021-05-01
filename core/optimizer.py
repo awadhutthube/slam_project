@@ -63,7 +63,7 @@ class PoseGraph(object):
     if False:
       for edge in self.optimizer.edges():
         self.edges_optimized = [(edge.vertices()[0].estimate().matrix(), edge.vertices()[1].estimate().matrix())for edge in self.optimizer.edges()]
-    # self.nodes_optimized = [i.estimate().matrix() for i in self.optimizer.vertices().values()]
-    self.nodes_optimized = [i.estimate().matrix() for i in self.nodes]
+    self.nodes_optimized = [i.estimate().matrix() for i in self.optimizer.vertices().values()]
+    # self.nodes_optimized = [i.estimate().matrix() for i in self.nodes]
     #self.nodes_optimized = (self.nodes_optimized)
     self.edges_optimized = np.array(self.edges_optimized)
