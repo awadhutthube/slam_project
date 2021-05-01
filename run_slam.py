@@ -43,15 +43,17 @@ def main():
     error = []
     
     # Iterate over the frames and update the rotation and translation vectors
-    for index in range(569, int(num_frames)):
+    for index in range(0, int(num_frames)):
+
+        print("Number of frames remaining: ", num_frames-index)
 
         frame, _ , _ = dataset[index]
         model(index, frame)
         
-        # if(index == int(num_frames)-1):
-        #     model.model_optimize()
+        if(index == int(num_frames)-1):
+            model.model_optimize()
 
-        if index>571:
+        if index>2:
             viewer.update(model)
 
         # if index>2:

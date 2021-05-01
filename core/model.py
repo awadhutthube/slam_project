@@ -118,7 +118,7 @@ class VisualSLAM():
         self.current_frame = current_frame
         global_flag = False
 
-        if stage == 569:
+        if stage == 0:
             """ process first frame """
             self.points_ref = self.detector.detect(current_frame)
             self.points_ref = np.array([x.pt for x in self.points_ref])
@@ -126,13 +126,14 @@ class VisualSLAM():
             self.prev_Rt = convert_to_4_by_4(self.ground_pose[stage])#np.eye(4) 
             self.prev_R = self.prev_Rt[:3,:3]
             self.prev_t = self.prev_Rt[:3, 3].reshape(-1,1)
+            self.poses.append(np.eye(4))
             self.poses.append(self.prev_Rt)
 
             # wtf check how to set reference pose for the pose graph (set to origin)
-            self.pose_graph.add_vertex(0, self.prev_Rt, True)
+            self.pose_graph.add_vertex(stage, self.prev_Rt, True)
             return
     
-        elif stage == 570:
+        elif stage == 1:
             """ process second frame """
             self.points_ref, points_cur = self.feature_tracker(self.prev_frame, current_frame, self.points_ref)
             E, _ = cv2.findEssentialMat(points_cur, self.points_ref, self.K, method=cv2.RANSAC, prob=0.999, threshold=1.0)
@@ -146,7 +147,6 @@ class VisualSLAM():
             if absolute_scale > 0.1:
                 self.cur_t = self.prev_t + absolute_scale*self.prev_R@t
                 self.cur_R = self.prev_R@R
-            # import ipdb; ipdb.set_trace()
             self.cur_Rt = convert_to_Rt(self.cur_R, self.cur_t)
             self.poses.append(convert_to_4_by_4(self.cur_Rt))
             self.graph_extend(convert_to_4_by_4(self.cur_Rt), self.prev_Rt, stage, stage-1)
@@ -234,8 +234,8 @@ class VisualSLAM():
                 rel_pose[:3,3] = rel_pose[:3,3]*abs_dist
                 self.add_loop_constraint(rel_pose, stage, int(idx_j))
                 
-                if(self.loop_closure_count%5 == 0):
-                    import ipdb; ipdb.set_trace()
+                if(self.loop_closure_count%50 == 0):
+                    # import ipdb; ipdb.set_trace()
                     self.pose_graph.optimize(self.args.num_iter)
                     self.poses = self.pose_graph.nodes_optimized
                     global_flag = True
@@ -246,10 +246,15 @@ class VisualSLAM():
             # if self.args.optimize:
             #     self.run_optimizer(self.args.local_window)
                 #self.calculate_errors()
-        self.prev_t = self.poses[-1][:3, 3].reshape(-1,1)
-        self.prev_R = self.poses[-1][:3, :3]
-        # self.prev_t = self.cur_t 
-        # self.prev_R = self.cur_R
+        if global_flag:
+            last_pose = self.pose_graph.optimizer.vertex(len(self.poses)-1).estimate().matrix()
+            self.prev_t = last_pose[:3,3].reshape(-1, 1)
+            self.prev_R = last_pose[:3,:3]
+        else:
+            self.prev_t = self.cur_t 
+            self.prev_R = self.cur_R
+            # self.prev_t = self.poses[-1][:3, 3].reshape(-1,1)
+            # self.prev_R = self.poses[-1][:3, :3]
         self.prev_Rt = convert_to_Rt(self.prev_R, self.prev_t)        
         if global_flag:
             # import ipdb; ipdb.set_trace()
