@@ -19,7 +19,7 @@ def parse_argument():
     parser.add_argument('--gt_loops', required=True)
     parser.add_argument('--optimize', action='store_true', help='enable pose graph optimization')
     parser.add_argument('--local_window', default=10, type=int, help='number of frames to run the optimization')
-    parser.add_argument('--num_iter', default=100, type=int, help='number of max iterations to run the optimization')
+    parser.add_argument('--num_iter', default=300, type=int, help='number of max iterations to run the optimization')
     
     return parser.parse_args()
 
@@ -43,18 +43,21 @@ def main():
     error = []
     
     # Iterate over the frames and update the rotation and translation vectors
-    for index in range(0, num_frames):
+    for index in range(569, int(num_frames)):
 
         frame, _ , _ = dataset[index]
         model(index, frame)
+        
+        # if(index == int(num_frames)-1):
+        #     model.model_optimize()
 
-        if index>2:
+        if index>571:
             viewer.update(model)
 
-        if index>2:
-            x, y, z = model.cur_t[0], model.cur_t[1], model.cur_t[2]
-        else:
-            x, y, z = 0.,  0., 0.
+        # if index>2:
+        #     x, y, z = model.cur_t[0], model.cur_t[1], model.cur_t[2]
+        # else:
+        #     x, y, z = 0.,  0., 0.
             
         ## Set ofset to remove the overlap
         # offset_x, offset_y = 5, 5
@@ -67,6 +70,7 @@ def main():
 
 
     viewer.update(model)
+    import ipdb; ipdb.set_trace()
     viewer.stop()
 
 if __name__ == "__main__":

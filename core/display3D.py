@@ -156,7 +156,7 @@ class Viewer3D(object):
 
     if self.q_img is None or self.q_poses is None:
       return
-
+    # import ipdb; ipdb.set_trace()
     self.q_gt.put(np.array(vo.gt))
     self.q_poses.put(vo.poses)
 
