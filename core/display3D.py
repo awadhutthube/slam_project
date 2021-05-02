@@ -123,12 +123,12 @@ class Viewer3D(object):
         pangolin.DrawCameras(self.state_gt[1:])
       # Render previous keyframes
       if self.state[0].shape[0] >= 2:
-        gl.glColor3f(1.0, 0.0, 1.0)
+        gl.glColor3f(0.0, 0.0, 1.0)
         pangolin.DrawCameras(self.state[:-1])
 
       # Render current pose
       if self.state[0].shape[0] >= 1:
-        gl.glColor3f(0.2, 1.0, 0.2)
+        gl.glColor3f(0.0, 1.0, 0.0)
         pangolin.DrawCameras(self.state[-1:])
     if True:
       if self.state_optimized is not None:

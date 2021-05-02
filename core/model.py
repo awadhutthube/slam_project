@@ -198,6 +198,11 @@ class VisualSLAM():
             self.points_ref, points_cur = self.feature_tracker(self.prev_frame, current_frame, self.points_ref)
             E, mask = cv2.findEssentialMat(points_cur, self.points_ref, self.K, method=cv2.RANSAC, prob=0.999, threshold=1.0)
             _, R, t, mask = cv2.recoverPose(E, points_cur, self.points_ref, self.K)
+            num_inliers = mask[mask > 0].shape[0]
+            # num_outliers = mask.shape[0] - num_inliers
+            inlier_ratio = num_inliers/mask.shape[0]
+            print("Tracker inlier ratio: ", inlier_ratio)
+
             # temp_mat = convert_to_4_by_4(convert_to_Rt(R,t))
             # temp_inv = np.linalg.inv(temp_mat)
             # R = temp_inv[:3,:3]
@@ -236,12 +241,12 @@ class VisualSLAM():
             if found_loop:
                 curr_stage_gt = convert_to_4_by_4(self.ground_pose[stage])
                 matched_gt = convert_to_4_by_4(self.ground_pose[idx_j])
-                # import ipdb; ipdb.set_trace()
                 # np.save('Poses', np.array(self.poses))
                 # np.save('Gt', np.array(self.gt))
                 abs_dist = self.getAbsoluteScaleLoop(stage, idx_j)
                 if (abs_dist > 0.1 and abs(rel_pose[0,3]*abs_dist) < 1 ):
                     rel_pose[:3,3] = rel_pose[:3,3]*abs_dist
+                    # import ipdb; ipdb.set_trace()
                     # rel_pose = getTransform(curr_stage_gt, matched_gt)
                     self.add_loop_constraint(rel_pose, stage, int(idx_j))
                     print("Found Loop Closure: ", self.loop_closure_count)

@@ -7,7 +7,7 @@ from .utils import *
 
 class LoopClosure():
     def __init__(self, path, dataset, intrinsic_mat):
-        gt_loop_data = scipy.io.loadmat(path + 'gnd_kitti06.mat')
+        gt_loop_data = scipy.io.loadmat(path + 'gnd_kitti07.mat')
         self.neighbours = gt_loop_data['gnd']            # This is a numpy array of shape (num_images, 1)
         self.dataset = dataset
         self.K = intrinsic_mat
@@ -39,22 +39,22 @@ class LoopClosure():
             if len(matches) > max_num_matches:
                 max_num_matches = len(matches)
                 target_frame = frame_old.copy()
-                best_kp1 = kp1
-                best_kp2 = kp2
-                best_matches = matches
+                best_kp1 = kp1.copy()
+                best_kp2 = kp2.copy()
+                best_matches = matches.copy()
                 matched_idx = img_idx
                 # if(max_num_matches > 100):
                 #     print("Length of best matches: ", max_num_matches)
                 #     break
 
         # Compute R and t for maximally matching neighbours
-        if max_num_matches >= 30:
+        if max_num_matches >= 60:
             # import ipdb; ipdb.set_trace()
             matched_kp1 = []
             matched_kp2 = []
             # self.DrawMatches(frame_new, target_frame, best_kp1, best_kp2, best_matches)
             # import ipdb; ipdb.set_trace()
-            for mat in best_matches[:30]:
+            for mat in best_matches[:50]:
                 matched_kp1.append(best_kp1[mat.queryIdx].pt)
                 matched_kp2.append(best_kp2[mat.trainIdx].pt)
 
@@ -66,7 +66,7 @@ class LoopClosure():
             # num_outliers = mask.shape[0] - num_inliers
             inlier_ratio = num_inliers/mask.shape[0]
             # import ipdb; ipdb.set_trace()
-            if inlier_ratio < 0.85:
+            if inlier_ratio < 0.7:
                 print("Found a matrix with very poor inlier ratio: ", inlier_ratio)
                 return False, pose, matched_idx
             if (abs(t[1]) > abs(t[2]) or abs(t[0]) > abs(t[2])):
@@ -102,6 +102,7 @@ class LoopClosure():
         matches = bf.knnMatch(descriptors_1,descriptors_2,k=2)
         good = []
         for m,n in matches:
+            # import ipdb; ipdb.set_trace()
             if m.distance < 0.8*n.distance:
                 good.append(m)
         matches = sorted(good, key = lambda x:x.distance)
