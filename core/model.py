@@ -149,7 +149,7 @@ class VisualSLAM():
             self.points_ref = points_cur
             absolute_scale = self.getAbsoluteScale(stage)
             # print(absolute_scale)
-            if absolute_scale > 0.1:
+            if absolute_scale > 0:
                 self.cur_t = self.prev_t + absolute_scale*self.prev_R@t
                 self.cur_R = self.prev_R@R
             self.cur_Rt = convert_to_Rt(self.cur_R, self.cur_t)
@@ -232,22 +232,21 @@ class VisualSLAM():
             self.graph_extend(pose, prev_pose, stage, stage-1)
 
             found_loop, rel_pose, idx_j = self.loop_closure.check_loop_closure(stage, current_frame)
+
             if found_loop:
-                curr_stage_gt = self.ground_pose[stage]
-                matched_gt = self.ground_pose[idx_j]
+                curr_stage_gt = convert_to_4_by_4(self.ground_pose[stage])
+                matched_gt = convert_to_4_by_4(self.ground_pose[idx_j])
+                # import ipdb; ipdb.set_trace()
                 # np.save('Poses', np.array(self.poses))
                 # np.save('Gt', np.array(self.gt))
-                # import ipdb; ipdb.set_trace()
-                print("Found Loop Closure: ", self.loop_closure_count)
                 abs_dist = self.getAbsoluteScaleLoop(stage, idx_j)
-                rel_pose[:3,3] = rel_pose[:3,3]*abs_dist
-                rel_pose = getTransform(curr_stage_gt, matched_gt)
-                self.add_loop_constraint(rel_pose, stage, int(idx_j))
+                if (abs_dist > 0.1 and abs(rel_pose[0,3]*abs_dist) < 1 ):
+                    rel_pose[:3,3] = rel_pose[:3,3]*abs_dist
+                    # rel_pose = getTransform(curr_stage_gt, matched_gt)
+                    self.add_loop_constraint(rel_pose, stage, int(idx_j))
+                    print("Found Loop Closure: ", self.loop_closure_count)
 
-
-
-
-                if(self.loop_closure_count%5 == 0):
+                # if(self.loop_closure_count%5 == 0):
                     # import ipdb; ipdb.set_trace()
                     self.pose_graph.optimize(self.args.num_iter)
                     self.poses = self.pose_graph.nodes_optimized

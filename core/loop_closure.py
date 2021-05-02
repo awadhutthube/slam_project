@@ -48,13 +48,13 @@ class LoopClosure():
                 #     break
 
         # Compute R and t for maximally matching neighbours
-        if max_num_matches >= 100:
+        if max_num_matches >= 30:
             # import ipdb; ipdb.set_trace()
             matched_kp1 = []
             matched_kp2 = []
             # self.DrawMatches(frame_new, target_frame, best_kp1, best_kp2, best_matches)
             # import ipdb; ipdb.set_trace()
-            for mat in best_matches:
+            for mat in best_matches[:30]:
                 matched_kp1.append(best_kp1[mat.queryIdx].pt)
                 matched_kp2.append(best_kp2[mat.trainIdx].pt)
 
@@ -62,6 +62,16 @@ class LoopClosure():
             matched_kp2 = np.array(matched_kp2)
             E, _ = cv2.findEssentialMat(matched_kp1, matched_kp2, self.K, method=cv2.RANSAC, prob=0.999, threshold=1.0)
             _, R, t, mask = cv2.recoverPose(E, matched_kp1, matched_kp2, self.K)
+            num_inliers = mask[mask > 0].shape[0]
+            # num_outliers = mask.shape[0] - num_inliers
+            inlier_ratio = num_inliers/mask.shape[0]
+            # import ipdb; ipdb.set_trace()
+            if inlier_ratio < 0.85:
+                print("Found a matrix with very poor inlier ratio: ", inlier_ratio)
+                return False, pose, matched_idx
+            if (abs(t[1]) > abs(t[2]) or abs(t[0]) > abs(t[2])):
+                print("Found unexpected translation ", t)
+                return False, pose, matched_idx
             pose = convert_to_4_by_4(convert_to_Rt(R,t))
             print("New index: ", idx)
             print("Matched Index: ", matched_idx)
@@ -92,7 +102,7 @@ class LoopClosure():
         matches = bf.knnMatch(descriptors_1,descriptors_2,k=2)
         good = []
         for m,n in matches:
-            if m.distance < 0.75*n.distance:
+            if m.distance < 0.8*n.distance:
                 good.append(m)
         matches = sorted(good, key = lambda x:x.distance)
         return kp1, kp2, matches

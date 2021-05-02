@@ -50,7 +50,7 @@ def main():
         frame, _ , _ = dataset[index]
         model(index, frame)
         
-        if(index == int(num_frames)-1):
+        if(index == int(num_frames)-10):
             model.model_optimize()
 
         if index>2:
