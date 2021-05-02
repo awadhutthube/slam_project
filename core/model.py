@@ -236,17 +236,17 @@ class VisualSLAM():
             if found_loop:
                 curr_stage_gt = convert_to_4_by_4(self.ground_pose[stage])
                 matched_gt = convert_to_4_by_4(self.ground_pose[idx_j])
-                # import ipdb; ipdb.set_trace()
                 # np.save('Poses', np.array(self.poses))
                 # np.save('Gt', np.array(self.gt))
                 abs_dist = self.getAbsoluteScaleLoop(stage, idx_j)
                 if (abs_dist > 0.1 and abs(rel_pose[0,3]*abs_dist) < 1 ):
+                    # import ipdb; ipdb.set_trace()
                     rel_pose[:3,3] = rel_pose[:3,3]*abs_dist
                     # rel_pose = getTransform(curr_stage_gt, matched_gt)
                     self.add_loop_constraint(rel_pose, stage, int(idx_j))
                     print("Found Loop Closure: ", self.loop_closure_count)
 
-                # if(self.loop_closure_count%5 == 0):
+                if(self.loop_closure_count%10 == 0):
                     # import ipdb; ipdb.set_trace()
                     self.pose_graph.optimize(self.args.num_iter)
                     self.poses = self.pose_graph.nodes_optimized

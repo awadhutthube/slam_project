@@ -7,7 +7,7 @@ from .utils import *
 
 class LoopClosure():
     def __init__(self, path, dataset, intrinsic_mat):
-        gt_loop_data = scipy.io.loadmat(path + 'gnd_kitti06.mat')
+        gt_loop_data = scipy.io.loadmat(path + 'gnd_kitti02.mat')
         self.neighbours = gt_loop_data['gnd']            # This is a numpy array of shape (num_images, 1)
         self.dataset = dataset
         self.K = intrinsic_mat
@@ -48,7 +48,7 @@ class LoopClosure():
                 #     break
 
         # Compute R and t for maximally matching neighbours
-        if max_num_matches >= 30:
+        if max_num_matches >= 60:
             # import ipdb; ipdb.set_trace()
             matched_kp1 = []
             matched_kp2 = []
